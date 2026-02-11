@@ -11,7 +11,7 @@ namespace Pasta;
 
 public partial class MainWindow : Window
 {
-  private static readonly string _dataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Pasta", "data");
+  private static readonly string _dataPath = Path.Combine(AppContext.BaseDirectory, "data");
   private static readonly string _textPath = Path.Combine(_dataPath, "text.txt");
   private static readonly string _imagesPath = Path.Combine(_dataPath, "images");
 

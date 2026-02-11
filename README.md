@@ -2,8 +2,6 @@
 
 A simple WPF tool that pastes pre-configured text and images into the target window with one click.
 
-**Platform:** Windows x64
-
 ## How it works
 
 1. Click **Open** to open the data folder (`%LocalAppData%\Pasta\data`)
@@ -12,14 +10,15 @@ A simple WPF tool that pastes pre-configured text and images into the target win
 
 > **Note:** Firefox only supports pasting the first image. Use a Chromium-based browser (Chrome, Edge, etc.) for full functionality.
 
-## Install
+## Requirements
 
-Requires [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
+- Windows x64
+- .NET 8 Desktop Runtime
 
-Download the latest release, extract, and run `install.bat`. It will:
-- Create `%LocalAppData%\Pasta` folder
-- Copy binaries to `%LocalAppData%\Pasta`
-- Create a desktop shortcut
+## Usage
+
+- **Directly run:** Run `Pasta.exe` directly.
+- **Install:** Run `install.bat` to copy binaries to `%LocalAppData%\Pasta` and create shortcuts on the desktop and Start Menu.
 
 ## Build
 
