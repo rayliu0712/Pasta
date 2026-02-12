@@ -2,6 +2,8 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
@@ -16,6 +18,11 @@ public partial class MainWindow : Window
   private static readonly string _imagesPath = Path.Combine(_dataPath, "images");
 
   static MainWindow()
+  {
+    CreatePath();
+  }
+
+  private static void CreatePath()
   {
     Directory.CreateDirectory(_dataPath);
     Directory.CreateDirectory(_imagesPath);
@@ -42,24 +49,57 @@ public partial class MainWindow : Window
 
   private void OpenButton_Click(object sender, RoutedEventArgs e)
   {
+    CreatePath();
     Process.Start("explorer.exe", _dataPath);
   }
 
   private async void PasteButton_Click(object sender, RoutedEventArgs e)
   {
+    CreatePath();
+    ErrorText.Visibility = Visibility.Collapsed;
+
     SendKeys.SendWait("%{tab}");
 
-    string textToCopy = await File.ReadAllTextAsync(_textPath);
+    using var fs = new FileStream(_textPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    using var sr = new StreamReader(fs);
+    string textToCopy = await sr.ReadToEndAsync();
     textToCopy = textToCopy.Trim();
-    Clipboard.SetText(textToCopy);
-    SendKeys.SendWait("^v");
+    if (textToCopy.Length > 0)
+    {
+      bool succeed = await Retry(() => Clipboard.SetText(textToCopy));
+      if (succeed)
+        SendKeys.SendWait("^v");
+    }
 
     string[] imagesToCopy = Directory.GetFiles(_imagesPath);
-    if (imagesToCopy.Length == 0) return;
+    if (imagesToCopy.Length > 0)
+    {
+      var dropList = new StringCollection();
+      dropList.AddRange(imagesToCopy);
 
-    var dropList = new StringCollection();
-    dropList.AddRange(imagesToCopy);
-    Clipboard.SetFileDropList(dropList);
-    SendKeys.SendWait("^v");
+      bool succeed = await Retry(() => Clipboard.SetFileDropList(dropList));
+      if (succeed)
+        SendKeys.SendWait("^v");
+    }
+  }
+
+  private async Task<bool> Retry(Action action)
+  {
+    for (int i = 0; i < 10; i++)
+    {
+      try
+      {
+        action();
+        return true;
+      }
+      catch (COMException ex) when ((uint)ex.ErrorCode == 0x800401D0)
+      {
+        await Task.Delay(50);
+      }
+    }
+
+    ErrorText.Text = "Failed to access clipboard";
+    ErrorText.Visibility = Visibility.Visible;
+    return false;
   }
 }

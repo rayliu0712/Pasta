@@ -6,13 +6,13 @@
   xmlns:local="clr-namespace:Pasta"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   Title="Pasta"
-  Icon="icon.ico"
-  SizeToContent="Height"
   Width="250"
-  Topmost="True"
-  ResizeMode="CanMinimize"
   Background="#1E1E1E"
+  Icon="icon.ico"
   MouseLeftButtonDown="Window_MouseLeftButtonDown"
+  ResizeMode="CanMinimize"
+  SizeToContent="Height"
+  Topmost="True"
   mc:Ignorable="d">
 
   <Window.Resources>
@@ -25,11 +25,11 @@
           <ControlTemplate TargetType="Button">
             <Border
               x:Name="border"
+              Padding="{TemplateBinding Padding}"
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="1"
-              CornerRadius="3"
-              Padding="{TemplateBinding Padding}">
+              CornerRadius="3">
               <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
           </ControlTemplate>
@@ -45,7 +45,10 @@
       </Style.Triggers>
     </Style>
 
-    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Style
+      x:Key="PrimaryButton"
+      BasedOn="{StaticResource {x:Type Button}}"
+      TargetType="Button">
       <Setter Property="Background" Value="#0078D4" />
       <Setter Property="BorderBrush" Value="#0078D4" />
       <Style.Triggers>
@@ -62,15 +65,21 @@
   </Window.Resources>
 
   <DockPanel>
-    <TextBlock DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="0,0,0,12">
+    <TextBlock
+      Margin="0,0,0,12"
+      HorizontalAlignment="Center"
+      DockPanel.Dock="Bottom">
       <Hyperlink
+        Foreground="#888888"
         NavigateUri="https://github.com/rayliu0712/Pasta"
-        RequestNavigate="Hyperlink_RequestNavigate"
-        Foreground="#888888">
+        RequestNavigate="Hyperlink_RequestNavigate">
         GitHub
       </Hyperlink>
     </TextBlock>
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24">
+    <StackPanel
+      Margin="24"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center">
       <Button
         x:Name="OpenButton"
         MinWidth="120"
@@ -83,10 +92,17 @@
         x:Name="PasteButton"
         MinWidth="120"
         Padding="32,10"
-        Style="{StaticResource PrimaryButton}"
-        Click="PasteButton_Click">
+        Click="PasteButton_Click"
+        Style="{StaticResource PrimaryButton}">
         Paste
       </Button>
+      <TextBlock
+        x:Name="ErrorText"
+        Margin="0,12,0,0"
+        HorizontalAlignment="Center"
+        Foreground="#FF4444"
+        TextWrapping="Wrap"
+        Visibility="Collapsed" />
     </StackPanel>
   </DockPanel>
 </Window>
