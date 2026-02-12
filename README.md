@@ -19,6 +19,13 @@ A simple WPF tool that pastes pre-configured text and images into the target win
 
 - **Directly run:** Run `Pasta.exe` directly.
 - **Install:** Run `install.bat` to copy binaries to `%LocalAppData%\Pasta` and create shortcuts on the desktop and Start Menu.
+- **Uninstall:** Run following cmd commands:
+
+  ```batch
+  rmdir /s /q "%localappdata%\Pasta"
+  del "%userprofile%\Desktop\Pasta.lnk"
+  del "%appdata%\Microsoft\Windows\Start Menu\Programs\Pasta.lnk"
+  ```
 
 ## Build
 
