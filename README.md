@@ -4,7 +4,7 @@ A simple WPF tool that pastes pre-configured text and images into the target win
 
 ## How it works
 
-1. Click **Open** to open the data folder (`%LocalAppData%\Pasta\data`)
+1. Click **Open** to open the data folder
 2. Edit `text.txt` and put images in the `images` folder
 3. Click **Paste** — Pasta will simulate Alt+Tab to switch to the previous window, then simulate Ctrl+V to paste the text and images
 
