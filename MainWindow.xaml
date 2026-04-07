@@ -2,29 +2,23 @@
   x:Class="Pasta.MainWindow"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:local="clr-namespace:Pasta"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   Title="Pasta"
-  Width="250"
-  Background="#1E1E1E"
+  Background="#FFFFFF"
   Icon="icon.ico"
   MouseLeftButtonDown="Window_MouseLeftButtonDown"
   ResizeMode="CanMinimize"
-  SizeToContent="Height"
-  Topmost="True"
-  mc:Ignorable="d">
+  SizeToContent="WidthAndHeight"
+  Topmost="True">
 
   <Window.Resources>
     <Style TargetType="Button">
-      <Setter Property="Background" Value="#333333" />
-      <Setter Property="Foreground" Value="#FFFFFF" />
-      <Setter Property="BorderBrush" Value="#555555" />
+      <Setter Property="Background" Value="#F0F0F0" />
+      <Setter Property="Foreground" Value="#000000" />
+      <Setter Property="BorderBrush" Value="#CCCCCC" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
             <Border
-              x:Name="border"
               Padding="{TemplateBinding Padding}"
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
@@ -37,10 +31,10 @@
       </Setter>
       <Style.Triggers>
         <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Background" Value="#444444" />
+          <Setter Property="Background" Value="#E0E0E0" />
         </Trigger>
         <Trigger Property="IsPressed" Value="True">
-          <Setter Property="Background" Value="#555555" />
+          <Setter Property="Background" Value="#D0D0D0" />
         </Trigger>
       </Style.Triggers>
     </Style>
@@ -51,6 +45,7 @@
       TargetType="Button">
       <Setter Property="Background" Value="#0078D4" />
       <Setter Property="BorderBrush" Value="#0078D4" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
       <Style.Triggers>
         <Trigger Property="IsMouseOver" Value="True">
           <Setter Property="Background" Value="#1A86D8" />
@@ -64,13 +59,13 @@
     </Style>
   </Window.Resources>
 
-  <DockPanel>
+  <DockPanel Margin="48,0">
     <TextBlock
       Margin="0,0,0,12"
       HorizontalAlignment="Center"
       DockPanel.Dock="Bottom">
       <Hyperlink
-        Foreground="#888888"
+        Foreground="#0066CC"
         NavigateUri="https://github.com/rayliu0712/Pasta"
         RequestNavigate="Hyperlink_RequestNavigate">
         GitHub
@@ -81,28 +76,40 @@
       HorizontalAlignment="Center"
       VerticalAlignment="Center">
       <Button
-        x:Name="OpenButton"
         MinWidth="120"
         Margin="0,0,0,12"
         Padding="32,10"
-        Click="OpenButton_Click">
-        Open
+        Click="EditContentButton_Click">
+        編輯內容
       </Button>
       <Button
-        x:Name="PasteButton"
         MinWidth="120"
+        Margin="0,0,0,12"
         Padding="32,10"
-        Click="PasteButton_Click"
+        Click="EditImagesButton_Click">
+        編輯圖片
+      </Button>
+      <Button
+        MinWidth="120"
+        Margin="0,0,0,12"
+        Padding="32,10"
+        Click="CopyContentButton_Click"
         Style="{StaticResource PrimaryButton}">
-        Paste
+        複製文字
+      </Button>
+      <Button
+        MinWidth="120"
+        Margin="0,0,0,12"
+        Padding="32,10"
+        Click="CopyImagesButton_Click"
+        Style="{StaticResource PrimaryButton}">
+        複製圖片
       </Button>
       <TextBlock
-        x:Name="ErrorText"
-        Margin="0,12,0,0"
+        x:Name="StatusText"
         HorizontalAlignment="Center"
-        Foreground="#FF4444"
         TextWrapping="Wrap"
-        Visibility="Collapsed" />
+        Visibility="Hidden" />
     </StackPanel>
   </DockPanel>
 </Window>

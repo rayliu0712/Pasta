@@ -1,40 +1,15 @@
-﻿using System;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Navigation;
-using SendKeys = System.Windows.Forms.SendKeys;
-
 namespace Pasta;
 
 public partial class MainWindow : Window
 {
-  private static readonly string _dataPath = Path.Combine(AppContext.BaseDirectory, "data");
-  private static readonly string _textPath = Path.Combine(_dataPath, "text.txt");
-  private static readonly string _imagesPath = Path.Combine(_dataPath, "images");
-
-  static MainWindow()
+  private void HideMessage()
   {
-    CreatePath();
-  }
-
-  private static void CreatePath()
-  {
-    Directory.CreateDirectory(_dataPath);
-    Directory.CreateDirectory(_imagesPath);
-
-    if (!File.Exists(_textPath))
-      File.Create(_textPath).Dispose();
-  }
-
-  public MainWindow()
-  {
-    InitializeComponent();
-    EnableDarkMode();
+    StatusText.Visibility = Visibility.Hidden;
   }
 
   private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -44,62 +19,69 @@ public partial class MainWindow : Window
 
   private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
   {
-    Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+    ProcessStartInfo info = new()
+    {
+      FileName = e.Uri.AbsoluteUri,
+      UseShellExecute = true
+    };
+    Process.Start(info);
   }
 
-  private void OpenButton_Click(object sender, RoutedEventArgs e)
+  private void EditContentButton_Click(object sender, RoutedEventArgs e)
   {
-    CreatePath();
-    Process.Start("explorer.exe", _dataPath);
+    HideMessage();
+    Process.Start("notepad.exe", _contentPath);
   }
 
-  private async void PasteButton_Click(object sender, RoutedEventArgs e)
+  private void EditImagesButton_Click(object sender, RoutedEventArgs e)
   {
-    CreatePath();
-    ErrorText.Visibility = Visibility.Collapsed;
-
-    SendKeys.SendWait("%{tab}");
-
-    using var fs = new FileStream(_textPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-    using var sr = new StreamReader(fs);
-    string textToCopy = await sr.ReadToEndAsync();
-    textToCopy = textToCopy.Trim();
-    if (textToCopy.Length > 0)
-    {
-      bool succeed = await Retry(() => Clipboard.SetText(textToCopy));
-      if (succeed)
-        SendKeys.SendWait("^v");
-    }
-
-    string[] imagesToCopy = Directory.GetFiles(_imagesPath);
-    if (imagesToCopy.Length > 0)
-    {
-      var dropList = new StringCollection();
-      dropList.AddRange(imagesToCopy);
-
-      bool succeed = await Retry(() => Clipboard.SetFileDropList(dropList));
-      if (succeed)
-        SendKeys.SendWait("^v");
-    }
+    HideMessage();
+    Process.Start("explorer.exe", _imagesPath);
   }
 
-  private async Task<bool> Retry(Action action)
+  private void ShowOkMessage(string message)
   {
-    for (int i = 0; i < 10; i++)
+    StatusText.Text = message;
+    StatusText.Foreground = new SolidColorBrush(Colors.Green);
+    StatusText.Visibility = Visibility.Visible;
+  }
+
+  private void ShowErrorMessage(string message)
+  {
+    StatusText.Text = message;
+    StatusText.Foreground = new SolidColorBrush(Colors.Red);
+    StatusText.Visibility = Visibility.Visible;
+  }
+
+  private void CopyContentButton_Click(object sender, RoutedEventArgs e)
+  {
+    HideMessage();
+
+    if (_cachedContent.Length == 0)
     {
-      try
-      {
-        action();
-        return true;
-      }
-      catch (COMException ex) when ((uint)ex.ErrorCode == 0x800401D0)
-      {
-        await Task.Delay(50);
-      }
+      ShowErrorMessage("沒有內容");
+      return;
     }
 
-    ErrorText.Text = "Failed to access clipboard";
-    ErrorText.Visibility = Visibility.Visible;
-    return false;
+    if (CopyContent())
+      ShowOkMessage("複製內容成功");
+    else
+      ShowErrorMessage("複製內容失敗");
+  }
+
+  private void CopyImagesButton_Click(object sender, RoutedEventArgs e)
+  {
+    HideMessage();
+
+    if (_cachedImages.Length == 0)
+    {
+      ShowErrorMessage("沒有圖片");
+      return;
+    }
+
+    if (CopyImages())
+      ShowOkMessage("複製圖片成功");
+    else
+      ShowErrorMessage("複製圖片失敗");
   }
 }
