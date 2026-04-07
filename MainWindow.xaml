@@ -95,7 +95,7 @@
         Padding="32,10"
         Click="CopyContentButton_Click"
         Style="{StaticResource PrimaryButton}">
-        複製文字
+        複製內容
       </Button>
       <Button
         MinWidth="120"

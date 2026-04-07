@@ -7,11 +7,6 @@ namespace Pasta;
 
 public partial class MainWindow : Window
 {
-  private void HideMessage()
-  {
-    StatusText.Visibility = Visibility.Hidden;
-  }
-
   private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
   {
     DragMove();
@@ -29,14 +24,17 @@ public partial class MainWindow : Window
 
   private void EditContentButton_Click(object sender, RoutedEventArgs e)
   {
-    HideMessage();
     Process.Start("notepad.exe", _contentPath);
   }
 
   private void EditImagesButton_Click(object sender, RoutedEventArgs e)
   {
-    HideMessage();
     Process.Start("explorer.exe", _imagesPath);
+  }
+
+  private void HideMessage()
+  {
+    StatusText.Visibility = Visibility.Hidden;
   }
 
   private void ShowOkMessage(string message)
@@ -53,7 +51,7 @@ public partial class MainWindow : Window
     StatusText.Visibility = Visibility.Visible;
   }
 
-  private void CopyContentButton_Click(object sender, RoutedEventArgs e)
+  private async void CopyContentButton_Click(object sender, RoutedEventArgs e)
   {
     HideMessage();
 
@@ -63,13 +61,17 @@ public partial class MainWindow : Window
       return;
     }
 
-    if (CopyContent())
+    Mouse.OverrideCursor = Cursors.Wait;
+
+    if (await TryCopyContent())
       ShowOkMessage("複製內容成功");
     else
       ShowErrorMessage("複製內容失敗");
+
+    Mouse.OverrideCursor = null;
   }
 
-  private void CopyImagesButton_Click(object sender, RoutedEventArgs e)
+  private async void CopyImagesButton_Click(object sender, RoutedEventArgs e)
   {
     HideMessage();
 
@@ -79,9 +81,13 @@ public partial class MainWindow : Window
       return;
     }
 
-    if (CopyImages())
+    Mouse.OverrideCursor = Cursors.Wait;
+
+    if (await TryCopyImages())
       ShowOkMessage("複製圖片成功");
     else
       ShowErrorMessage("複製圖片失敗");
+
+    Mouse.OverrideCursor = null;
   }
 }

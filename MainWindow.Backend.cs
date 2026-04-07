@@ -1,6 +1,8 @@
 using System;
-using System.Collections.Specialized;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 namespace Pasta;
 
@@ -21,15 +23,15 @@ public partial class MainWindow : Window
   {
     InitializeComponent();
 
-    if (File.Exists(_contentPath))
-      ReloadContent();
-    else
-      File.Create(_contentPath).Dispose();
-
     if (Directory.Exists(_imagesPath))
       ReloadImages();
     else
       Directory.CreateDirectory(_imagesPath);
+
+    if (File.Exists(_contentPath))
+      ReloadContent();
+    else
+      File.Create(_contentPath).Dispose();
 
     _contentWatcher = new()
     {
@@ -44,7 +46,7 @@ public partial class MainWindow : Window
     {
       Path = _imagesPath,
       Filter = "*.*",
-      NotifyFilter = NotifyFilters.LastWrite,
+      NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
       EnableRaisingEvents = true
     };
     _imagesWatcher.Created += OnImagesChanged;
@@ -55,6 +57,7 @@ public partial class MainWindow : Window
 
   private void OnContentChanged(object sender, FileSystemEventArgs e)
   {
+    // FileSystemWatcher 事件在執行緒池執行，需透過 Dispatcher 切回 UI 執行緒才能安全存取 WPF 元件
     Dispatcher.InvokeAsync(ReloadContent);
   }
 
@@ -72,7 +75,12 @@ public partial class MainWindow : Window
 
   private async void ReloadContent()
   {
-    using FileStream fs = new(_contentPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    using FileStream fs = new(
+      _contentPath,
+      FileMode.Open,
+      FileAccess.Read,
+      FileShare.ReadWrite  // 允許其他程式在你開著這個 FileStream 的同時，也能對同一個檔案進行讀寫
+    );
     using StreamReader sr = new(fs);
     _cachedContent = (await sr.ReadToEndAsync()).Trim();
   }
@@ -82,31 +90,53 @@ public partial class MainWindow : Window
     _cachedImages = Directory.GetFiles(_imagesPath);
   }
 
-  private bool CopyContent()
+  private static Task<bool> RunOnStaThread(Action action)
   {
-    try
+    // Clipboard API 需要 STA 執行緒，但 Task.Run 預設使用 MTA 執行緒池，因此需要手動建立 STA 執行緒
+
+    TaskCompletionSource<bool> tsc = new();
+
+    Thread thread = new(() =>
     {
-      Clipboard.SetText(_cachedContent);
-      return true;
-    }
-    catch
+      try
+      {
+        action();
+        tsc.SetResult(true);
+      }
+      catch (COMException)
+      {
+        tsc.SetResult(false);
+      }
+      catch (Exception e)
+      {
+        tsc.SetException(e);
+      }
+    })
     {
-      return false;
-    }
+      IsBackground = true
+    };
+
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+
+    return tsc.Task;
   }
 
-  private bool CopyImages()
+  private Task<bool> TryCopyContent()
   {
-    try
+    return RunOnStaThread(() =>
     {
-      StringCollection dropList = [];
-      dropList.AddRange(_cachedImages);
-      Clipboard.SetFileDropList(dropList);
-      return true;
-    }
-    catch
+      Clipboard.Clear();
+      Clipboard.SetText(_cachedContent);
+    });
+  }
+
+  private Task<bool> TryCopyImages()
+  {
+    return RunOnStaThread(() =>
     {
-      return false;
-    }
+      Clipboard.Clear();
+      Clipboard.SetFileDropList([.. _cachedImages]);
+    });
   }
 }
